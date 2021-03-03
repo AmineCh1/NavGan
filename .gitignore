@@ -1,0 +1,14 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+#System files
+DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE configuration files
+.idea
+.vscode
