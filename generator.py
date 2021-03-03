@@ -97,7 +97,7 @@ class Trainer:
             display.clear_output(wait=True)
             
             toy_dataset = torch.tensor(make_moons(n_samples=self.ds_size, noise=0.2)[0]).float()
-            toy_dataset = toy_dataset.to("cuda")
+            toy_dataset = toy_dataset #.to("cuda")
 
             gt_valid, gt_fake =  Variable(Tensor(self.ds_size, 1).fill_(1.0), requires_grad=False), Variable(Tensor(self.ds_size, 1).fill_(0.0), requires_grad=False)
 
@@ -135,6 +135,7 @@ class Trainer:
 
             self.opt_D.step()
 
+            display.clear_output(wait=True)
             self.vis.update(g_loss_evolution,[], gen_output.detach().cpu().clone().numpy())
             self.vis.display()
 

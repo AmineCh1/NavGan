@@ -18,7 +18,7 @@ class Visualizer:
         ## do plotting with gridspec ... 
 
         fig = plt.figure(figsize = (15,13), tight_layout = True)
-        gs = gridspec.GridSpec(2,2)
+        gs = gridspec.GridSpec(2, 2)
         
         ax_temp = plt.subplot(gs[1,:])
         ax_temp.scatter(self.g_output[:,0],self.g_output[:,1])
@@ -28,6 +28,7 @@ class Visualizer:
 
         ax_temp = plt.subplot(gs[0,1])
         ax_temp.plot(self.magnitude)
+        plt.show()
         
         
 
