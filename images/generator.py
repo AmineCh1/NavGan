@@ -102,6 +102,8 @@ class Trainer:
         self.adv_loss = torch.nn.BCELoss()
         self.epochs = eps
         self.vis = visualizer.Visualizer(eps)
+
+        self.seed = torch.normal(mean = 0, std = 1, size=(16, self.latent_dim)).cuda()
         
         self.dataloader = torch.utils.data.DataLoader(
     datasets.MNIST(
@@ -191,7 +193,8 @@ class Trainer:
 
 
                 display.clear_output(wait=True)
-                self.vis.update(g_loss_evolution,magnitude_evolution, gen_out_detached.cpu().clone().numpy())
+                gen_out_display = self.generator(self.seed).detach()
+                self.vis.update(g_loss_evolution, magnitude_evolution, gen_out_display.cpu().clone().numpy())
                 self.vis.display(epoch)
             # self.vis.video()
 
