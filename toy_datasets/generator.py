@@ -71,7 +71,8 @@ class Trainer:
         self.epochs = eps
         self.ds_size = ds_size
         self.rd_state = rd_state
-        self.vis = visualizer.Visualizer()
+        self.vis = visualizer.Visualizer(eps)
+        self.dist = ""
         
 
 
@@ -96,10 +97,14 @@ class Trainer:
             
             display.clear_output(wait=True)
             
-            toy_dataset = torch.tensor(make_moons(n_samples=self.ds_size, noise=0.2)[0]).float()
-            toy_dataset = toy_dataset #.to("cuda")
+            toy_dataset = torch.tensor(make_moons(n_samples=self.ds_size, noise=0)[0]).float()
+            toy_dataset = toy_dataset.to("cuda") # Mettre dehors (en tant que parametre)
 
-            gt_valid, gt_fake =  Variable(Tensor(self.ds_size, 1).fill_(1.0), requires_grad=False), Variable(Tensor(self.ds_size, 1).fill_(0.0), requires_grad=False)
+            #Ground truths, no gradient necessary 
+            gt_valid, gt_fake =  torch.ones(size=(self.ds_size, 1)).cuda(), torch.zeros(size=(self.ds_size, 1)).cuda()
+            # gt_valid.to("cuda")
+            # gt_fake.to("cuda")
+            
 
             #-----------------
             # Train Generator
@@ -107,7 +112,8 @@ class Trainer:
 
             self.opt_G.zero_grad()
             # Generate input in latent dim for generator ( i.e sample noise ...)
-            gen_input  = Variable(Tensor(np.random.normal(0, 1, (100,2))))
+            gen_input  = torch.normal(mean = 0, std = 1, size=(100,2)).cuda()
+            #  Variable(Tensor(np.random.normal(0, 1, (100,2))))  # torch.random.normal 
             gen_output = self.generator(gen_input)
             
             decision = self.discriminator(gen_output)
@@ -124,10 +130,16 @@ class Trainer:
             #---------------------
             
             self.opt_D.zero_grad()
+
+            gen_out_detached = gen_output.detach()
             
-            decision_nograd_g = self.discriminator(gen_output.detach())
+            grad_mag = torch.norm(gen_out_detached)
+            magnitude_evolution.append(grad_mag)
+
+            decision_nograd_g = self.discriminator(gen_out_detached)
 
             real_loss = self.adv_loss(self.discriminator(toy_dataset),gt_valid)
+            ## Use color coding (cmap) to represent the fake loss
             fake_loss = self.adv_loss(decision_nograd_g, gt_fake)
             
             d_loss = (real_loss+fake_loss)/2
@@ -136,8 +148,9 @@ class Trainer:
             self.opt_D.step()
 
             display.clear_output(wait=True)
-            self.vis.update(g_loss_evolution,[], gen_output.detach().cpu().clone().numpy())
-            self.vis.display()
+            self.vis.update(g_loss_evolution,magnitude_evolution, gen_out_detached.cpu().clone().numpy())
+            self.vis.display(epoch)
+        self.vis.video()
 
 
 

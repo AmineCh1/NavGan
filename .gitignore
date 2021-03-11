@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -12,3 +12,10 @@ DS_Store
 # IDE configuration files
 .idea
 .vscode
+
+# video files and folders
+images/frames/
+toy_datasets/frames/
+images/data/
+*.mp4
+
