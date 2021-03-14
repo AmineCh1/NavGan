@@ -16,34 +16,31 @@ class Visualizer:
         self.g_output = g_output
 
     def display(self, i):
-        ## do plotting with gridspec ... 
+        
 
         fig = plt.figure(figsize = (18,15), tight_layout = True)
         fig.suptitle("Training evolution", fontsize=14)
         gs = gridspec.GridSpec(2, 2)
         
         gs_inner = gridspec.GridSpecFromSubplotSpec(4, 4, subplot_spec=gs[:,1])
-        for i, img in enumerate(self.g_output):
-            ax_temp = plt.subplot(gs_inner[i // 4, i % 4])
-            ax_temp.imshow(img[0,:,:])
+        for j, img in enumerate(self.g_output):
+            ax_temp = plt.subplot(gs_inner[j // 4, j % 4])
+            ax_temp.imshow(img[0,:,:],cmap = 'gray')
+            [s.set_visible(False) for s in ax_temp.spines.values()]
 
-        # ax_temp = plt.subplot(gs[:,1])
-        # ax_temp.scatter(self.g_output[:,0],self.g_output[:,1])
-        # ax_temp.set_title("Generated dataset")
-        # [s.set_visible(False) for s in ax_temp.spines.values()]
+       
 
         ax_temp = plt.subplot(gs[0,0])
         ax_temp.plot(self.g_loss)
-        ax_temp.set_xticks(np.arange(self.eps+1,step=int(self.eps/10)))
+        ax_temp.set_xticks(np.arange(0, self.eps,step=int(self.eps/10)))
         ax_temp.set_xlabel("Epochs")
         ax_temp.set_ylabel("Generator loss")
 
         ax_temp = plt.subplot(gs[1,0])
         ax_temp.plot(self.magnitude)
-        ax_temp.set_xticks(np.arange(self.eps+1,step=int(self.eps/10)))
+        ax_temp.set_xticks(np.arange(0, self.eps,step=int(self.eps/10)))
         ax_temp.set_xlabel("Epochs")
         ax_temp.set_ylabel("Gradient magnitude")
-        
         
         plt.savefig("frames/fig_{}.png".format(i))
         plt.show()
@@ -52,6 +49,7 @@ class Visualizer:
         print("Preparing video ...")
         subprocess.call("ffmpeg -r 5 -i frames/fig_%d.png -vcodec libx264 -y movie.mp4",shell=True)
         print("Done !")
+        
 
         
         

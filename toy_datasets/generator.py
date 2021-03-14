@@ -68,6 +68,7 @@ class Trainer:
         self.opt_G =  torch.optim.Adam(self.generator.parameters())
         self.opt_D = torch.optim.Adam(self.discriminator.parameters())
         self.adv_loss = torch.nn.BCELoss()
+        self.adv_loss_map = torch.nn.BCELoss(reduction='none')
         self.epochs = eps
         self.ds_size = ds_size
         self.rd_state = rd_state
@@ -141,14 +142,19 @@ class Trainer:
             real_loss = self.adv_loss(self.discriminator(toy_dataset),gt_valid)
             ## Use color coding (cmap) to represent the fake loss
             fake_loss = self.adv_loss(decision_nograd_g, gt_fake)
-            
+            fake_loss_map = self.adv_loss_map(decision_nograd_g,gt_fake)
+
             d_loss = (real_loss+fake_loss)/2
             d_loss.backward()
 
             self.opt_D.step()
 
             display.clear_output(wait=True)
-            self.vis.update(g_loss_evolution,magnitude_evolution, gen_out_detached.cpu().clone().numpy())
+            
+            fake_loss_detached = fake_loss_map.detach().cpu().clone().numpy()
+           
+            self.vis.update(g_loss_evolution,magnitude_evolution, gen_out_detached.cpu().clone().numpy(),fake_loss_detached)
+            
             self.vis.display(epoch)
         self.vis.video()
 

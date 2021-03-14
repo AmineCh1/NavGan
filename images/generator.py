@@ -139,9 +139,10 @@ class Trainer:
         g_loss_evolution = []
         magnitude_evolution = []    
         for epoch in range(self.epochs):
-            for i, (imgs, _) in enumerate(self.dataloader):
-                display.clear_output(wait=True)
-                
+            g_loss_avg = []
+            magnitude_avg = []
+            display.clear_output(wait=True)
+            for i, (imgs, _) in enumerate(self.dataloader):                
                 #Ground truths, no gradient necessary 
                 gt_valid, gt_fake =  torch.ones(size=(imgs.size(0), 1)).cuda(), torch.zeros(size=(imgs.size(0), 1)).cuda()
                
@@ -165,7 +166,8 @@ class Trainer:
                 g_loss.backward()
 
                 self.opt_G.step()
-                g_loss_evolution.append(g_loss.item())
+                # faire moyenne 
+                g_loss_avg.append(g_loss.item())
 
                 #---------------------
                 # Train Discriminator
@@ -174,9 +176,10 @@ class Trainer:
                 self.opt_D.zero_grad()
 
                 gen_out_detached = gen_output.detach()
-                print(gen_output.shape)
+                # print(gen_output.shape)
                 grad_mag = torch.norm(gen_out_detached)
-                magnitude_evolution.append(grad_mag)
+                #
+                magnitude_avg.append(grad_mag.item())
 
                 decision_nograd_g = self.discriminator(gen_out_detached)
 
@@ -189,14 +192,17 @@ class Trainer:
 
                 self.opt_D.step()
                 
-                print(" [Batch %d/%d] "% ( i, len(self.dataloader)))
+                # print(" [Batch %d/%d] "% ( i, len(self.dataloader)))
 
 
-                display.clear_output(wait=True)
-                gen_out_display = self.generator(self.seed).detach()
-                self.vis.update(g_loss_evolution, magnitude_evolution, gen_out_display.cpu().clone().numpy())
-                self.vis.display(epoch)
-            # self.vis.video()
+                
+            gen_out_display = self.generator(self.seed).detach()
+            self.vis.update(g_loss_evolution, magnitude_evolution, gen_out_display.cpu().clone().numpy())
+            g_loss_evolution.append(np.mean(g_loss_avg))
+            magnitude_evolution.append(np.mean(magnitude_avg))
+            self.vis.display(epoch)
+            
+        self.vis.video()
 
 
 

@@ -1,29 +1,33 @@
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
+from matplotlib.colors import Colormap
 import numpy as np 
 import subprocess
 class Visualizer:
-    def __init__(self, eps = 200, g_loss=[],magnitude= [],g_output = []):
+    def __init__(self, eps = 200, g_loss=[],magnitude= [],g_output = [],fake_loss = []):
         self.g_loss = g_loss
         self.mag = magnitude
         self.g_output = g_output
         self.eps = eps
+        self.fake_loss = fake_loss
         
 
-    def update(self, g_loss,magnitude,g_output):
+    def update(self, g_loss,magnitude,g_output,fake_loss):
         self.g_loss = g_loss
         self.magnitude = magnitude
         self.g_output = g_output
+        self.fake_loss = fake_loss
 
     def display(self, i):
-        ## do plotting with gridspec ... 
+        
 
         fig = plt.figure(figsize = (18,15), tight_layout = True)
         fig.suptitle("Training evolution", fontsize=14)
         gs = gridspec.GridSpec(2, 2)
         
         ax_temp = plt.subplot(gs[:,1])
-        ax_temp.scatter(self.g_output[:,0],self.g_output[:,1])
+        cmap_fake = Colormap(self.fake_loss)
+        ax_temp.scatter(self.g_output[:,0],self.g_output[:,1],cmap = cmap_fake)
         ax_temp.set_title("Generated dataset")
         [s.set_visible(False) for s in ax_temp.spines.values()]
 
