@@ -70,20 +70,23 @@ class Trainer:
         self.adv_loss = torch.nn.BCELoss()
         self.adv_loss_map = torch.nn.BCELoss(reduction='none')
         self.epochs = eps
-        self.ds_size = ds_size
         self.rd_state = rd_state
         self.vis = visualizer.Visualizer(eps)
-        self.dist = ""
+        self.dataset = []
         
 
+    def set_dataset(self, dataset):
+        self.dataset = torch.tensor(dataset).float()
 
     def cuda(self):
         """Transfers parameters of generator, discriminator and loss to GPU memory.
         """        
         if CUDA:
-            self.generator.cuda()
-            self.discriminator.cuda()
-            self.adv_loss.cuda()
+            print(CUDA)
+            self.generator.to("cuda")
+            self.discriminator.to("cuda")
+            self.adv_loss.to("cuda")
+            self.dataset.to("cuda")
 
 
     def train(self):
@@ -98,11 +101,11 @@ class Trainer:
             
             display.clear_output(wait=True)
             
-            toy_dataset = torch.tensor(make_moons(n_samples=self.ds_size, noise=0)[0]).float()
-            toy_dataset = toy_dataset.to("cuda") # Mettre dehors (en tant que parametre)
+            # toy_dataset = torch.tensor().float()
+            # toy_dataset = toy_dataset.to("cuda") # Mettre dehors (en tant que parametre)
 
             #Ground truths, no gradient necessary 
-            gt_valid, gt_fake =  torch.ones(size=(self.ds_size, 1)).cuda(), torch.zeros(size=(self.ds_size, 1)).cuda()
+            gt_valid, gt_fake =  torch.ones(size=(len(self.dataset), 1)).to("cuda"), torch.zeros(size=(len(self.dataset), 1)).to("cuda")
             # gt_valid.to("cuda")
             # gt_fake.to("cuda")
             
@@ -113,7 +116,7 @@ class Trainer:
 
             self.opt_G.zero_grad()
             # Generate input in latent dim for generator ( i.e sample noise ...)
-            gen_input  = torch.normal(mean = 0, std = 1, size=(100,2)).cuda()
+            gen_input  = torch.normal(mean = 0, std = 1, size=(100,2)).to("cuda")
             #  Variable(Tensor(np.random.normal(0, 1, (100,2))))  # torch.random.normal 
             gen_output = self.generator(gen_input)
             
@@ -139,8 +142,8 @@ class Trainer:
 
             decision_nograd_g = self.discriminator(gen_out_detached)
 
-            real_loss = self.adv_loss(self.discriminator(toy_dataset),gt_valid)
-            ## Use color coding (cmap) to represent the fake loss
+            real_loss = self.adv_loss(self.discriminator(self.dataset),gt_valid)
+            
             fake_loss = self.adv_loss(decision_nograd_g, gt_fake)
             fake_loss_map = self.adv_loss_map(decision_nograd_g,gt_fake)
 
