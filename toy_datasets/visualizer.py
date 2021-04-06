@@ -21,14 +21,19 @@ class Visualizer:
     def display(self, i):
         
 
-        fig = plt.figure(figsize = (18,15), tight_layout = True)
+        fig = plt.figure(figsize = (14,12), tight_layout = True)
         fig.suptitle("Training evolution", fontsize=14)
         gs = gridspec.GridSpec(2, 2)
         
         ax_temp = plt.subplot(gs[:,1])
-        cmap_fake = Colormap(self.fake_loss)
-        ax_temp.scatter(self.g_output[:,0],self.g_output[:,1],cmap = cmap_fake)
+        
+        sc = ax_temp.scatter(self.g_output[:,0],self.g_output[:,1],c = self.fake_loss)
+        sc.set_clim(0.1, 0.9)
+        plt.colorbar(sc)
+        
         ax_temp.set_title("Generated dataset")
+        ax_temp.set_xlim(-1,1)
+        ax_temp.set_ylim(-1,1)
         [s.set_visible(False) for s in ax_temp.spines.values()]
 
         ax_temp = plt.subplot(gs[0,0])
@@ -46,7 +51,13 @@ class Visualizer:
         
         plt.savefig("frames/fig_{}.png".format(i))
         plt.show()
-        
+    def disp_final(self,dataset):
+        fig = plt.figure(figsize = (18,15), tight_layout = True)
+        fig.suptitle("Final output", fontsize=14)
+        plt.scatter(dataset[:,0],dataset[:,1])
+        plt.savefig("frames/fig_9000.png")
+        plt.show()
+
     def video(self):
         print("Preparing video ...")
         subprocess.call("ffmpeg -r 5 -i frames/fig_%d.png -vcodec libx264 -y movie.mp4",shell=True)
