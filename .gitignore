@@ -16,6 +16,7 @@ DS_Store
 # video files and folders
 images/frames/
 toy_datasets/frames/
+toy_datasets/frames_dir
 images/data/
 *.mp4
 
