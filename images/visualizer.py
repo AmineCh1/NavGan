@@ -19,7 +19,7 @@ class Visualizer:
     def display(self, i):
 
         fig = plt.figure(figsize=(18, 15), tight_layout=True)
-        fig.suptitle("Training evolution", fontsize=14)
+        fig.suptitle("Training evolution, epoch {}".format(i), fontsize=14)
         gs = gridspec.GridSpec(2, 2)
 
         gs_inner = gridspec.GridSpecFromSubplotSpec(

@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.datasets import make_moons
 import scipy.linalg as la
 import torch
+
 CUDA = True if torch.cuda.is_available() else False
 GEN_PATH_IMG = "../models/gen_img.pth"
 GEN_PATH_DS = "../models/gen_ds.pth"
@@ -15,9 +16,9 @@ DECODER_PATH_VAE = '../models/trainedVAE_D.pth'
 
 DEVICE = "cpu"
 # "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE_IMG = 16
+BATCH_SIZE_IMG = 64
 IMG_SIZE = 28
-LATENT_DIM_IMG = 64
+LATENT_DIM_IMG = 2
 CHANNELS = 1
 
 LATENT_DIM_BIGAN = 2

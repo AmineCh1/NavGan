@@ -6,13 +6,11 @@ from IPython import display
 import torchvision.transforms as transforms
 import os
 from torchvision import datasets
-from helpers import *
-
-CUDA = True if torch.cuda.is_available() else False
+import helpers
 
 
 class Generator(nn.Module):
-    def __init__(self, latent_dim=LATENT_DIM, img_size=IMG_SIZE, channels=CHANNELS):
+    def __init__(self, latent_dim=helpers.LATENT_DIM_IMG, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS):
         super(Generator, self).__init__()
 
         def block(in_feat, out_feat, normalize=True):
@@ -25,7 +23,10 @@ class Generator(nn.Module):
         self.img_size = img_size
         self.channels = channels
         self.model = nn.Sequential(
-            *block(latent_dim, 128, normalize=False),
+
+            *block(latent_dim, 32, normalize=False),
+            *block(32, 64),
+            *block(64, 128),
             *block(128, 256),
             *block(256, 512),
             *block(512, 1024),
@@ -41,7 +42,7 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, img_size=IMG_SIZE, channels=CHANNELS):
+    def __init__(self, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS):
         super(Discriminator, self).__init__()
 
         self.model = nn.Sequential(
@@ -60,14 +61,11 @@ class Discriminator(nn.Module):
         return validity
 
 
-Tensor = torch.cuda.FloatTensor if CUDA else torch.FloatTensor
-
-
 class Trainer:
     """ Class that encapsulates a generator and a discriminator, with the addition of a training method.
     """
 
-    def __init__(self, eps=200, latent_dim=LATENT_DIM, img_size=IMG_SIZE, channels=CHANNELS, batch_size=BATCH_SIZE):
+    def __init__(self, eps=200, latent_dim=helpers.LATENT_DIM_IMG, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS, batch_size=helpers.BATCH_SIZE_IMG):
         """ Constructor.
 
         Args:
@@ -115,7 +113,7 @@ class Trainer:
     def cuda(self):
         """Transfers parameters of generator, discriminator and loss to GPU memory.
         """
-        if CUDA:
+        if helpers.CUDA:
             self.generator.cuda()
             self.discriminator.cuda()
             self.adv_loss.cuda()
@@ -130,7 +128,7 @@ class Trainer:
         magnitude_evolution = []
         np.random.seed(44)
         gen_input_fixed = torch.normal(
-            mean=0, std=1, size=(16, self.latent_dim))
+            mean=0, std=1, size=(16, self.latent_dim)).cuda()
         for epoch in range(self.epochs):
             g_loss_avg = []
             magnitude_avg = []
@@ -188,7 +186,7 @@ class Trainer:
 
                 self.opt_D.step()
 
-                # print(" [Batch %d/%d] "% ( i, len(self.dataloader)))
+                # print(" [Batch %d/%d] " % (i, len(self.dataloader)))
 
             gen_out_display = self.generator(gen_input_fixed).detach()
             self.vis.update(g_loss_evolution, magnitude_evolution,
@@ -199,5 +197,5 @@ class Trainer:
 
         self.vis.video()
 
-    def save_generator(self, path=GEN_PATH_IMG):
+    def save_generator(self, path=helpers.GEN_PATH_IMG):
         torch.save(self.generator.state_dict(), path)
