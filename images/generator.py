@@ -10,7 +10,22 @@ import helpers
 
 
 class Generator(nn.Module):
+    """Generator [summary]
+    Generator class that takes input from latent random distribution and outputs image.
+    """
+
     def __init__(self, latent_dim=helpers.LATENT_DIM_IMG, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS):
+        """__init__ 
+        Initializes Generator instance.
+
+        Args:
+            latent_dim ([type], optional): [description]. Defaults to helpers.LATENT_DIM_IMG.
+            img_size ([type], optional): [description]. Defaults to helpers.IMG_SIZE.
+            channels ([type], optional): [description]. Defaults to helpers.CHANNELS.
+
+        Returns:
+            [type]: [description]
+        """
         super(Generator, self).__init__()
 
         def block(in_feat, out_feat, normalize=True):
@@ -24,8 +39,7 @@ class Generator(nn.Module):
         self.channels = channels
         self.model = nn.Sequential(
 
-            *block(latent_dim, 32, normalize=False),
-            *block(32, 64),
+            *block(latent_dim, 64, normalize=False),
             *block(64, 128),
             *block(128, 256),
             *block(256, 512),
@@ -42,9 +56,19 @@ class Generator(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS):
-        super(Discriminator, self).__init__()
+    """
+    Discriminator of GAN. Funnel-like structure to the classify the input either real or from Generator.
+    """
 
+    def __init__(self, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS):
+        """__init__ 
+        Initiates Discriminator instance.
+
+        Args:
+            img_size (int, optional): Size of image input. Defaults to helpers.IMG_SIZE.
+            channels (int, optional): Number of images per channel. Defaults to helpers.CHANNELS.
+        """
+        super(Discriminator, self).__init__()
         self.model = nn.Sequential(
             nn.Linear(channels*img_size*img_size, 512),
             nn.LeakyReLU(0.2, inplace=True),
@@ -66,12 +90,15 @@ class Trainer:
     """
 
     def __init__(self, eps=200, latent_dim=helpers.LATENT_DIM_IMG, img_size=helpers.IMG_SIZE, channels=helpers.CHANNELS, batch_size=helpers.BATCH_SIZE_IMG):
-        """ Constructor.
+        """__init__ 
+        Constructs Generator/ Discriminator couple with specified parameters.
 
         Args:
-            eps (int, optional): Number of epochs to run in the training phase. Defaults to 200.
-            rd_state (int, optional): Seed for consistent randomness of the dataset to train on. Defaults to 42.
-            ds_size (int, optional): Size of the dataset. Defaults to 100.
+            eps (int, optional): Number of epochs of trining for GAN. Defaults to 200.
+            latent_dim (int, optional): Latent input dimension of Generator. Defaults to helpers.LATENT_DIM_IMG.
+            img_size (int, optional): Dimension of output image of Generator. Defaults to helpers.IMG_SIZE.
+            channels (int, optional): Number of channels per image. Defaults to helpers.CHANNELS.
+            batch_size (int, optional): Number of images per batch to train on. Defaults to helpers.BATCH_SIZE_IMG.
         """
 
         os.makedirs("data/mnist", exist_ok=True)
@@ -110,9 +137,10 @@ class Trainer:
             shuffle=True,
         )
 
-    def cuda(self):
+    def CUDA(self):
         """Transfers parameters of generator, discriminator and loss to GPU memory.
         """
+
         if helpers.CUDA:
             self.generator.cuda()
             self.discriminator.cuda()
@@ -120,8 +148,6 @@ class Trainer:
 
     def train(self):
         """Performs training of the generator/discriminator couple. 
-
-        [extended_summary]
         """
 
         g_loss_evolution = []
@@ -134,8 +160,8 @@ class Trainer:
             magnitude_avg = []
             display.clear_output(wait=True)
             for i, (imgs, _) in enumerate(self.dataloader):
-                # Ground truths, no gradient necessary
 
+                # Ground truths, no gradient necessary
                 gt_valid, gt_fake = torch.ones(size=(imgs.size(0), 1)).cuda(
                 ), torch.zeros(size=(imgs.size(0), 1)).cuda()
 
@@ -169,9 +195,9 @@ class Trainer:
                 self.opt_D.zero_grad()
 
                 gen_out_detached = gen_output.detach()
-                # print(gen_output.shape)
+
                 grad_mag = torch.norm(gen_out_detached)
-                #
+
                 magnitude_avg.append(grad_mag.item())
 
                 decision_nograd_g = self.discriminator(gen_out_detached)
@@ -185,17 +211,25 @@ class Trainer:
                 d_loss.backward()
 
                 self.opt_D.step()
+            print(gen_input_fixed.device)
+            gen_out_display = self.generator(
+                gen_input_fixed).detach().cpu().clone().numpy()
 
-                # print(" [Batch %d/%d] " % (i, len(self.dataloader)))
-
-            gen_out_display = self.generator(gen_input_fixed).detach()
             self.vis.update(g_loss_evolution, magnitude_evolution,
-                            gen_out_display.cpu().clone().numpy())
+                            gen_out_display)
+
             g_loss_evolution.append(np.mean(g_loss_avg))
             magnitude_evolution.append(np.mean(magnitude_avg))
+
             self.vis.display(epoch)
 
         self.vis.video()
 
     def save_generator(self, path=helpers.GEN_PATH_IMG):
+        """save_generator 
+        Save Generator model checkpoint to specified path.
+
+        Args:
+            path (str, optional): Path to save Generator. Defaults to helpers.GEN_PATH_IMG.
+        """
         torch.save(self.generator.state_dict(), path)

@@ -88,7 +88,8 @@ class Trainer:
         Args:
             eps (int, optional): Number of epochs to run in the training phase. Defaults to 200.
 
-            ds_size (int, optional): Size of the dataset. Defaults to 100.
+            ds_size (int, optional): Size of the dataset. Defaults to 20000.
+            batch_size (int, optional): Size of batch. Defaults to 100.
         """
 
         dataset = generate_cross(ds_size, width=5)
@@ -142,7 +143,7 @@ class Trainer:
             for batch_nb, pts in enumerate(self.dataloader):
                 # for batch in dataloader:
                 # gen input to "compare with" batch:
-                # then perofrm the same steps as image training ...
+                # then perform the same steps as image training ...
 
                 real_datapoints = torch.tensor(pts).float().to("cuda")
 
@@ -233,6 +234,12 @@ class Trainer:
             print(vector)
 
     def save_generator(self, path=GEN_PATH_DS):
+        """save_generator 
+        Save Generator model checkpoint to specified path.
+
+        Args:
+            path (str, optional): Path to save Generator. Defaults to helpers.GEN_PATH_DS.
+        """
         torch.save(self.generator.state_dict(), path)
 
     def print_state(self):

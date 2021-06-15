@@ -30,6 +30,10 @@ class Directions:
         return diff.numpy()
 
     def vis_difference(self):
+        """vis_difference [summary]
+
+        Plots eigenvector difference.
+        """
         print(self.init_vec)
 
         init = self.init_output.numpy()
@@ -38,11 +42,6 @@ class Directions:
         for i, alpha in enumerate(alphas):
 
             display.clear_output(wait=True)
-
-            # ASK ABOUT THIS
-
-            # norm = np.array([np.linalg.norm(self.compute_difference(
-            #     alpha, self.eigen[i])[0], axis=1) for i in range(2)])
             norm = [torch.linalg.norm(torch.tensor(
                 self.init_vec + alpha*self.eigen[i]), axis=1).detach().numpy() for i in range(2)]
 
@@ -83,7 +82,8 @@ class Directions:
         print("Done !")
 
     def vis_latent_space_abs(self):
-
+        """ Plots latent space difference visualisation 
+        """
         gen_input = self.init_vec.detach().numpy()
 
         grid_x, grid_y = np.mgrid[-2:2:200j, -2:2:200j]
@@ -99,7 +99,3 @@ class Directions:
         col = ax.imshow(grid_color.T, extent=(-2, 2, -2, 2))
         plt.colorbar(col, label='|Y| - |X|')
         plt.title("Latent Space coloring (Cross)")
-
-    def vis_latent_space_polar(self):
-
-        return None

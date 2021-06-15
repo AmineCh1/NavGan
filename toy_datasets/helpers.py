@@ -37,9 +37,9 @@ def extract_directions(generator, nb_dir=4):
 
     weight_mat = to_numpy(params[0])
     gram = weight_mat.T@weight_mat
-    eigen_vals, eigen_vecs = la.eig(gram)
+    eigen_vals, eigen_vecs = la.eigh(gram)
 
-    return eigen_vecs[:, np.argsort(eigen_vals)][0:nb_dir]
+    return eigen_vecs[:, np.flip(np.argsort(eigen_vals))][0:nb_dir]
 
 
 def load_ds_calmcode():

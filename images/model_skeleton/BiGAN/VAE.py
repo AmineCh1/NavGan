@@ -42,16 +42,16 @@ class Encoder (nn.Module):
         conv1_outchannels = 32
         conv2_outchannels = 32
 
+        self.X_dim = X_dim
         # How the convolutions change the shape
         conv_outputshape = (
             conv2_outchannels
-            * int(((X_dim[1]-4)/2 - 2)/2 + 1)
-            * int(((X_dim[2]-4)/2 - 2)/2 + 1)
+            * int(((X_dim[1]-4)/2 - 2)/2)
+            * int(((X_dim[2]-4)/2 - 2)/2)
         )
-
+        self.lin = nn.Linear(X_dim[1]*X_dim[2], 12*12)
         self.enc = nn.Sequential(
-            ConvBlock(X_dim[0], conv1_outchannels, kernel_size=4, stride=2),
-            ConvBlock(conv1_outchannels, conv2_outchannels,
+            ConvBlock(1, conv2_outchannels,
                       kernel_size=3, stride=2)
         )
 
@@ -59,7 +59,10 @@ class Encoder (nn.Module):
         self.zlogvar = nn.Linear(conv_outputshape, latent_dim)
 
     def forward(self, X):
-        x = self.enc(X)
+        x = X.view(-1, self.X_dim[1]*self.X_dim[2])
+        x = self.lin(x)
+        x = x.view(-1, self.X_dim[0], 12, 12)
+        x = self.enc(x)
         x = x.view(X.shape[0], -1)
         mean = self.zmean(x)
         logvar = self.zlogvar(x)
