@@ -4,6 +4,7 @@ Semester Project : Navigating in GAN's latent spaces.
 ## For images and toy_datasets: 
 In each folder, you will find a notebook containing a quick showcase of the implemented functions. Furthermore, each function has been commented.
 ### Libraries used: 
+
 - Python 3.7.9
 - Pytorch 1.7.1
 - Numpy 1.19.2
