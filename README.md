@@ -43,6 +43,6 @@ Args:
 I have also added a yml file to easily reproduce his environment. 
 
 
-I have written the code myself for the image and toy dataset visual- ```model_dir```: Path of pretrained model, usually in `WarpGAN/pretrained`.izations. 
-For WarpGAN: 
-For VAE models: 
+I have written the code myself for the image and toy dataset visuals. 
+For WarpGAN: https://github.com/seasonSH/WarpGAN
+For VAE models: https://github.com/mmichelis/GenerativeLatentSpace/tree/main/Models
