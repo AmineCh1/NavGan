@@ -20,3 +20,10 @@ toy_datasets/frames_dir
 images/data/
 *.mp4
 
+
+# WarpGAN models
+WarpGAN/pretrained/
+WarpGAN/data/example/*.jpg
+WarpGAN/data/example/*.png
+WarpGAN/result/
+#
